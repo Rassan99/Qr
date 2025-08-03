@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>EAN-13 Live Scanner</title>
+  <script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
+    #video { width: 100%; max-width: 400px; margin: auto; border: 1px solid #ccc; }
+    #barcode-number { font-size: 1.5rem; margin: 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>Live Product Barcode Scanner</h2>
+  <div id="video"></div>
+  <p id="barcode-number">Scan a product barcode</p>
+
+  <script>
+    const barcodeDisplay = document.getElementById('barcode-number');
+
+    Quagga.init({
+      inputStream: {
+        type: "LiveStream",
+        target: document.querySelector('#video'),
+        constraints: {
+          facingMode: "environment"
+        }
+      },
+      locator: {
+        patchSize: "medium",
+        halfSample: true
+      },
+      decoder: {
+        readers: ["ean_reader"]
+      },
+      locate: true
+    }, function (err) {
+      if (err) {
+        barcodeDisplay.textContent = "Camera error: " + err.message;
+        return;
+      }
+      Quagga.start();
+    });
+
+    Quagga.onDetected(data => {
+      const code = data.codeResult.code;
+      if (/^\d{13}$/.test(code)) {
+        barcodeDisplay.textContent = "Detected: " + code;
+        Quagga.stop(); // optional: remove if you want continuous scanning
+      }
+    });
+  </script>
+
+</body>
+</html>
