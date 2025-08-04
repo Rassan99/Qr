@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>EAN-13 Live Scanner</title>
+  <title>Multi-Type Barcode Scanner</title>
   <script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.js"></script>
   <style>
     body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
@@ -11,14 +11,14 @@
   </style>
 </head>
 <body>
-
+ 
   <h2>Live Product Barcode Scanner</h2>
   <div id="video"></div>
   <p id="barcode-number">Scan a product barcode</p>
-
+ 
   <script>
     const barcodeDisplay = document.getElementById('barcode-number');
-
+ 
     Quagga.init({
       inputStream: {
         type: "LiveStream",
@@ -32,7 +32,16 @@
         halfSample: true
       },
       decoder: {
-        readers: ["ean_reader"]
+        readers: [
+          "ean_reader",
+          "ean_8_reader",
+          "code_128_reader",
+          "code_39_reader",
+          "upc_reader",
+          "upc_e_reader",
+          "datamatrix_reader",
+          "qr_reader"
+        ]
       },
       locate: true
     }, function (err) {
@@ -42,15 +51,15 @@
       }
       Quagga.start();
     });
-
+ 
     Quagga.onDetected(data => {
       const code = data.codeResult.code;
-      if (/^\d{13}$/.test(code)) {
-        barcodeDisplay.textContent = "Detected: " + code;
-        Quagga.stop(); // optional: remove if you want continuous scanning
-      }
+      const format = data.codeResult.format;
+      barcodeDisplay.textContent = `Detected [${format.toUpperCase()}]: ${code}`;
+      Quagga.stop();
     });
   </script>
-
+ 
 </body>
 </html>
+ 
