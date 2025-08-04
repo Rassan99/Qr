@@ -7,6 +7,15 @@
   <style>
     body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
     #video { width: 100%; max-width: 400px; margin: auto; border: 1px solid #ccc; }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi-Type Barcode Scanner</title>
+<script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.js"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
+    #video { width: 100%; max-width: 400px; margin: auto; border: 1px solid #ccc; }
     #barcode-number { font-size: 1.5rem; margin: 20px; }
   </style>
 </head>
@@ -38,9 +47,7 @@
           "code_128_reader",
           "code_39_reader",
           "upc_reader",
-          "upc_e_reader",
-          "datamatrix_reader",
-          "qr_reader"
+          "upc_e_reader"
         ]
       },
       locate: true
