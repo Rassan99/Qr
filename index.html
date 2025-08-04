@@ -2,71 +2,67 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi-Type Barcode Scanner</title>
-  <script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.js"></script>
+  <title>Live Barcode Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
-    #video { width: 100%; max-width: 400px; margin: auto; border: 1px solid #ccc; }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Multi-Type Barcode Scanner</title>
-<script src="https://unpkg.com/@ericblade/quagga2@v0.0.10/dist/quagga.js"></script>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin: 0; padding: 0; }
-    #video { width: 100%; max-width: 400px; margin: auto; border: 1px solid #ccc; }
-    #barcode-number { font-size: 1.5rem; margin: 20px; }
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 1rem; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #barcode-result { font-size: 1.5rem; margin-top: 20px; }
+    #file-input { margin-top: 20px; }
   </style>
 </head>
 <body>
  
-  <h2>Live Product Barcode Scanner</h2>
-  <div id="video"></div>
-  <p id="barcode-number">Scan a product barcode</p>
+  <h2>Barcode Scanner</h2>
+  <div id="reader"></div>
+ 
+  <input type="file" accept="image/*" id="file-input" />
+  <p id="barcode-result">Waiting for scan...</p>
  
   <script>
-    const barcodeDisplay = document.getElementById('barcode-number');
+    const resultElement = document.getElementById("barcode-result");
+    const html5QrCode = new Html5Qrcode("reader");
  
-    Quagga.init({
-      inputStream: {
-        type: "LiveStream",
-        target: document.querySelector('#video'),
-        constraints: {
-          facingMode: "environment"
-        }
+    const qrConfig = {
+      fps: 10,
+      qrbox: 250,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.DATA_MATRIX
+      ]
+    };
+ 
+    html5QrCode.start(
+      { facingMode: "environment" },
+      qrConfig,
+      (decodedText, decodedResult) => {
+        resultElement.textContent = "Detected: " + decodedText;
+        html5QrCode.stop();
       },
-      locator: {
-        patchSize: "medium",
-        halfSample: true
-      },
-      decoder: {
-        readers: [
-          "ean_reader",
-          "ean_8_reader",
-          "code_128_reader",
-          "code_39_reader",
-          "upc_reader",
-          "upc_e_reader"
-        ]
-      },
-      locate: true
-    }, function (err) {
-      if (err) {
-        barcodeDisplay.textContent = "Camera error: " + err.message;
-        return;
-      }
-      Quagga.start();
+      (error) => {}
+    ).catch(err => {
+      resultElement.textContent = "Camera error: " + err;
     });
  
-    Quagga.onDetected(data => {
-      const code = data.codeResult.code;
-      const format = data.codeResult.format;
-      barcodeDisplay.textContent = `Detected [${format.toUpperCase()}]: ${code}`;
-      Quagga.stop();
+    document.getElementById("file-input").addEventListener("change", async (e) => {
+if (e.target.files.length === 0) return;
+ 
+const file = e.target.files[0];
+      try {
+        const result = await html5QrCode.scanFile(file, true);
+        resultElement.textContent = "Detected from image: " + result;
+      } catch (err) {
+        resultElement.textContent = "No valid barcode found in image.";
+      }
     });
   </script>
  
 </body>
-</html>
- 
