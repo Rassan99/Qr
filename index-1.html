@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title> Barcode Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 1rem; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #barcode-result { font-size: 1.5rem; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Barcode Scanner</h2>
+  <div id="reader"></div>
+  <p id="barcode-result">Waiting for scan...</p>
+  <script>
+    const resultElement = document.getElementById("barcode-result");
+    const html5QrCode = new Html5Qrcode("reader");
+    const qrConfig = {
+      fps: 10,
+      qrbox: 250,
+        aspectRatio: 5, 
+    enableZoom: true, 
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.DATA_MATRIX
+      ]
+    };
+function convertSpecialChars(text) {
+  let converted = text.replace(/\x1D/g, "=");
+  if (converted.startsWith("=")) {
+    converted = converted.slice(1);
+  }
+  return converted;
+}
+ 
+    html5QrCode.start(
+      { facingMode: "environment" },
+      qrConfig,
+      (decodedText, decodedResult) => {
+        resultElement.textContent = "Detected: " + convertSpecialChars(decodedText);
+        html5QrCode.stop();
+      },
+      (error) => {}
+    ).catch(err => {
+      resultElement.textContent = "Camera error: " + err;
+    });
+    
+  </script>
+</body>
+</html>
