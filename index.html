@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Barcode Scanner</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
   <style>
     body {
       font-family: sans-serif;
@@ -21,6 +21,7 @@
     #barcode-result {
       font-size: 1.2rem;
       margin-top: 1rem;
+      white-space: pre-wrap;
     }
     #file-input {
       margin-top: 20px;
@@ -60,11 +61,16 @@
       ]
     };
  
+    function convertSpecialChars(text) {
+      return text.replace(/\x1D/g, '=');
+    }
+ 
     html5QrCode.start(
       { facingMode: "environment" },
       config,
       (decodedText) => {
-        resultElement.textContent = "Detected: " + decodedText;
+        const converted = convertSpecialChars(decodedText);
+        resultElement.textContent = "Detected: " + converted;
         html5QrCode.stop();
       },
       (error) => {}
@@ -73,11 +79,12 @@
     });
  
     document.getElementById("file-input").addEventListener("change", async (e) => {
-      if (e.target.files.length === 0) return;
-      const file = e.target.files[0];
+if (e.target.files.length === 0) return;
+const file = e.target.files[0];
       try {
         const result = await html5QrCode.scanFile(file, true);
-        resultElement.textContent = "Detected from image: " + result;
+        const converted = convertSpecialChars(result);
+        resultElement.textContent = "Detected from image: " + converted;
       } catch (err) {
         resultElement.textContent = "No valid barcode found in image.";
       }
@@ -86,4 +93,3 @@
  
 </body>
 </html>
- 
