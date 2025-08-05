@@ -35,9 +35,13 @@
         Html5QrcodeSupportedFormats.DATA_MATRIX
       ]
     };
-      function convertSpecialChars(text) {
-      return text.replace(/\x1D/g, '=');
-    }
+function convertSpecialChars(text) {
+  let converted = text.replace(/\x1D/g, "=");
+  if (converted.startsWith("=")) {
+    converted = converted.slice(1);
+  }
+  return converted;
+}
  
     html5QrCode.start(
       { facingMode: "environment" },
