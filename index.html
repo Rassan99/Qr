@@ -35,61 +35,75 @@
   <input type="file" accept="image/*" id="file-input" />
   <p id="barcode-result">Waiting for scan...</p>
  
-  <script>
-    const resultElement = document.getElementById("barcode-result");
-    const html5QrCode = new Html5Qrcode("reader");
+<script>
+  const resultElement = document.getElementById("barcode-result");
+  const html5QrCode = new Html5Qrcode("reader");
  
-    const config = {
-      fps: 15,
-      qrbox: { width: 300, height: 400 },
-      aspectRatio: 1.33,
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      },
-      supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E,
-        Html5QrcodeSupportedFormats.CODE_128,
-        Html5QrcodeSupportedFormats.CODE_39,
-        Html5QrcodeSupportedFormats.CODE_93,
-        Html5QrcodeSupportedFormats.ITF,
-        Html5QrcodeSupportedFormats.CODABAR,
-        Html5QrcodeSupportedFormats.DATA_MATRIX
-      ]
-    };
+  const config = {
+    fps: 15,
+    qrbox: { width: 300, height: 400 },
+    aspectRatio: 1.33,
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true
+    },
+    supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA],
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.CODE_93,
+      Html5QrcodeSupportedFormats.ITF,
+      Html5QrcodeSupportedFormats.CODABAR,
+      Html5QrcodeSupportedFormats.DATA_MATRIX
+    ]
+  };
  
-    function convertSpecialChars(text) {
-      return text.replace(/\x1D/g, '=');
-    }
+  function convertSpecialChars(text) {
+    return text.replace(/\x1D/g, '=');
+  }
  
-    html5QrCode.start(
-      { facingMode: "environment" },
-      config,
-      (decodedText) => {
-        const converted = convertSpecialChars(decodedText);
-        resultElement.textContent = "Detected: " + converted;
-        html5QrCode.stop();
-      },
-      (error) => {}
-    ).catch(err => {
-      resultElement.textContent = "Camera error: " + err;
+  Html5Qrcode.getCameras()
+    .then(devices => {
+      if (devices && devices.length > 0) {
+        const cameraId = devices[0].id;
+ 
+        html5QrCode.start(
+          cameraId,
+          config,
+          (decodedText) => {
+            const converted = convertSpecialChars(decodedText);
+            resultElement.textContent = "Detected: " + converted;
+            html5QrCode.stop(); // Stop after first scan
+          },
+          (error) => {
+            // silently ignore scan errors
+          }
+        ).catch(err => {
+          resultElement.textContent = "Failed to start camera: " + err;
+        });
+      } else {
+        resultElement.textContent = "No camera devices found.";
+      }
+    })
+    .catch(err => {
+      resultElement.textContent = "Camera access error: " + err;
     });
  
-    document.getElementById("file-input").addEventListener("change", async (e) => {
+  document.getElementById("file-input").addEventListener("change", async (e) => {
 if (e.target.files.length === 0) return;
 const file = e.target.files[0];
-      try {
-        const result = await html5QrCode.scanFile(file, true);
-        const converted = convertSpecialChars(result);
-        resultElement.textContent = "Detected from image: " + converted;
-      } catch (err) {
-        resultElement.textContent = "No valid barcode found in image.";
-      }
-    });
-  </script>
+    try {
+      const result = await html5QrCode.scanFile(file, true);
+      const converted = convertSpecialChars(result);
+      resultElement.textContent = "Detected from image: " + converted;
+    } catch (err) {
+      resultElement.textContent = "No valid barcode found in image.";
+    }
+  });
+</script>
  
 </body>
 </html>
