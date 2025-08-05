@@ -1,111 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Barcode Scanner with Character Conversion</title>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/minified/html5-qrcode.min.js"></script>
+  <meta charset="UTF-8" />
+  <title> Barcode Scanner</title>
+<script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 1rem;
-    }
-    #reader {
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 3 / 4;
-      margin: auto;
-      border: 1px solid #ccc;
-    }
-    #barcode-result {
-      font-size: 1.2rem;
-      margin-top: 1rem;
-      word-break: break-word;
-    }
-    #file-input {
-      margin-top: 20px;
-    }
+    body { font-family: sans-serif; text-align: center; margin: 0; padding: 1rem; }
+    #reader { width: 100%; max-width: 400px; margin: auto; }
+    #barcode-result { font-size: 1.5rem; margin-top: 20px; }
   </style>
 </head>
 <body>
- 
   <h2>Barcode Scanner</h2>
   <div id="reader"></div>
-  <input type="file" accept="image/*" id="file-input" />
   <p id="barcode-result">Waiting for scan...</p>
- 
   <script>
     const resultElement = document.getElementById("barcode-result");
     const html5QrCode = new Html5Qrcode("reader");
- 
-    function convertSpecialChars(text) {
-      // Converts ASCII group separator (GS = 0x1D) to '='
-      return text.replace(/\x1D/g, "=");
+    const qrConfig = {
+      fps: 10,
+      qrbox: 250,
+        aspectRatio: 5, 
+    enableZoom: true, 
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.CODE_93,
+        Html5QrcodeSupportedFormats.ITF,
+        Html5QrcodeSupportedFormats.CODABAR,
+        Html5QrcodeSupportedFormats.DATA_MATRIX
+      ]
+    };
+      function convertSpecialChars(text) {
+      return text.replace(/\x1D/g, '=');
     }
  
-    async function startScanner() {
-      try {
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-          resultElement.textContent = "No camera found.";
-          return;
-        }
- 
-        const cameraId = cameras[0].id;
- 
-        await html5QrCode.start(
-          cameraId,
-          {
-            fps: 15,
-            qrbox: { width: 300, height: 400 },
-            aspectRatio: 1.33,
-            experimentalFeatures: {
-              useBarCodeDetectorIfSupported: true
-            },
-            formatsToSupport: [
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.CODE_93,
-              Html5QrcodeSupportedFormats.ITF,
-              Html5QrcodeSupportedFormats.CODABAR,
-              Html5QrcodeSupportedFormats.DATA_MATRIX
-            ]
-          },
-          (decodedText) => {
-            const converted = convertSpecialChars(decodedText);
-            resultElement.textContent = "Detected: " + converted;
-            html5QrCode.stop();
-          },
-          () => {
-            // Ignore scan errors
-          }
-        );
- 
-      } catch (err) {
-        resultElement.textContent = "Error starting camera: " + err;
-        console.error(err);
-      }
-    }
- 
-    document.getElementById("file-input").addEventListener("change", async (e) => {
-if (e.target.files.length === 0) return;
-const file = e.target.files[0];
-      try {
-        const result = await html5QrCode.scanFile(file, true);
-        const converted = convertSpecialChars(result);
-        resultElement.textContent = "Detected from image: " + converted;
-      } catch (err) {
-        resultElement.textContent = "No valid barcode found in image.";
-      }
+    html5QrCode.start(
+      { facingMode: "environment" },
+      qrConfig,
+      (decodedText, decodedResult) => {
+        resultElement.textContent = "Detected: " + convertSpecialChars(decodedText);
+        html5QrCode.stop();
+      },
+      (error) => {}
+    ).catch(err => {
+      resultElement.textContent = "Camera error: " + err;
     });
- 
-    window.addEventListener("load", startScanner);
+    
   </script>
- 
 </body>
 </html>
