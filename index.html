@@ -2,30 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Live Barcode Scanner</title>
+  <title> Barcode Scanner</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
     body { font-family: sans-serif; text-align: center; margin: 0; padding: 1rem; }
     #reader { width: 100%; max-width: 400px; margin: auto; }
     #barcode-result { font-size: 1.5rem; margin-top: 20px; }
-    #file-input { margin-top: 20px; }
   </style>
 </head>
 <body>
- 
   <h2>Barcode Scanner</h2>
   <div id="reader"></div>
- 
-  <input type="file" accept="image/*" id="file-input" />
   <p id="barcode-result">Waiting for scan...</p>
- 
   <script>
     const resultElement = document.getElementById("barcode-result");
     const html5QrCode = new Html5Qrcode("reader");
- 
     const qrConfig = {
       fps: 10,
       qrbox: 250,
+        aspectRatio: 1.333334, 
+    enableZoom: true, 
       formatsToSupport: [
         Html5QrcodeSupportedFormats.EAN_13,
         Html5QrcodeSupportedFormats.EAN_8,
@@ -39,7 +35,6 @@
         Html5QrcodeSupportedFormats.DATA_MATRIX
       ]
     };
- 
     html5QrCode.start(
       { facingMode: "environment" },
       qrConfig,
@@ -51,18 +46,6 @@
     ).catch(err => {
       resultElement.textContent = "Camera error: " + err;
     });
- 
-    document.getElementById("file-input").addEventListener("change", async (e) => {
-if (e.target.files.length === 0) return;
- 
-const file = e.target.files[0];
-      try {
-        const result = await html5QrCode.scanFile(file, true);
-        resultElement.textContent = "Detected from image: " + result;
-      } catch (err) {
-        resultElement.textContent = "No valid barcode found in image.";
-      }
-    });
+    
   </script>
- 
 </body>
